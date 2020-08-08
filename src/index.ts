@@ -1,1 +1,1 @@
-console.log('funfando')
+console.log('funfando');
