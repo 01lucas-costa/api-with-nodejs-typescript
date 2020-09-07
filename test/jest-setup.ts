@@ -1,7 +1,7 @@
 import { SetupServer } from '@src/server'
 import supertest from 'supertest'
 
-let server = new SetupServer()
+let server: SetupServer
 
 beforeAll(async () => {
    server = new SetupServer()
