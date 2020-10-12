@@ -1,4 +1,36 @@
-name: Complete Workflow
+Skip to content
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+ 
+@01lucas-costa 
+waldemarnt
+/
+node-typescript-api
+16
+13140
+Code
+Issues
+Pull requests
+1
+Actions
+Projects
+Wiki
+Security
+Insights
+node-typescript-api/.github/workflows/full-workflow.yml
+@waldemarnt
+waldemarnt Fix workflow
+Latest commit 96e04b0 on 17 Jun
+ History
+ 1 contributor
+38 lines (26 sloc)  923 Bytes
+ 
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+name: Complete workflow
 
 on: ['push']
 
@@ -9,12 +41,12 @@ jobs:
       runs-on: ubuntu-latest
 
       strategy:
-         matrix:
-            node-version: [12.x]
-            mongodb-version: [4.2]
+      matrix:
+         node-version: [12.x]
+         mongodb-version: [4.2]
 
       steps:
-      - users: actions/checkout@v2
+      - uses: actions/checkout@v2
       - run: git fetch --prune --unshallow
 
       - name: Use Node.js ${{ matrix.node-version }}
