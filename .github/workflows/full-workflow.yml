@@ -9,9 +9,9 @@ jobs:
       runs-on: ubuntu-latest
 
       strategy:
-      matrix:
-         node-version: [12.x]
-         mongodb-version: [4.2]
+         matrix:
+            node-version: [12.x]
+            mongodb-version: [4.2]
 
       steps:
       - uses: actions/checkout@v2
