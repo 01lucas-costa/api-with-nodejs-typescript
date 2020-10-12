@@ -1,35 +1,3 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@01lucas-costa 
-waldemarnt
-/
-node-typescript-api
-16
-13140
-Code
-Issues
-Pull requests
-1
-Actions
-Projects
-Wiki
-Security
-Insights
-node-typescript-api/.github/workflows/full-workflow.yml
-@waldemarnt
-waldemarnt Fix workflow
-Latest commit 96e04b0 on 17 Jun
- History
- 1 contributor
-38 lines (26 sloc)  923 Bytes
- 
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
 name: Complete workflow
 
 on: ['push']
