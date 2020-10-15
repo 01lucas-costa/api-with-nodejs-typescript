@@ -1,9 +1,15 @@
 {
-   "App": {
-     "resources": {
-       "StormGlass": {
-         "apiToken": "test-token"
-       }
-     }
-   }
+  "App": {
+    "database": {
+      "mongoUrl": "mongodb://localhost:27017/surf-forecast-test"
+    },
+    "resources": {
+      "StormGlass": {
+        "apiToken": "test-token"
+      }
+    },
+    "logger": {
+      "enabled": false
+    }
+  }
 }
