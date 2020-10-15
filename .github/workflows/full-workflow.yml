@@ -45,6 +45,6 @@ jobs:
 
     - name: Deployment
       if: github.ref == 'refs/heads/main'
-      run: git remote add origin ssh://git@kamino.deploy.umbler.com:9922/jny6glme/projects01lucascosta-com.git && git push origin
+      run: git remote add origin ssh://git@kamino.deploy.umbler.com:9922/jny6glme/projects01lucascosta-com.git && git push umbler master
       env:
         CI: true
