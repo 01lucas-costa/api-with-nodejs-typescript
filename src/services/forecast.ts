@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { StormGlass, ForecastPoint } from '@src/clients/stormGlass'
 import { InternalError } from '@src/util/errors/internal-errors'
 import { Beach } from '@src/models/beach'
@@ -23,25 +24,36 @@ export class Forecast {
       protected RatingService: typeof Rating = Rating
    ) {}
 
-   public async processForecastForBeaches(beaches: Beach[]): Promise<TimeForecast[]> {
-      const pointWithCorrectSources: BeachForecast[] = []
-      
-      logger.info(`Preparing the forecast for ${beaches.length} beaches`)
-      
+   public async processForecastForBeaches(beaches: Beach[]): Promise<TimeForecast[]> {      
       try {
-         for (const beach of beaches) {
-            const rating = new this.RatingService(beach)
-            const points = await this.stormGlass.fetchPoints(beach.lat, beach.lng)
-            const enricheBeachData = this.enrichedBeachData(points, beach, rating)
+         const beachForecast = await this.calculateRating(beaches)
 
-            pointWithCorrectSources.push(...enricheBeachData)
-         }
+         const timeForecast = this.mapForecastByTime(beachForecast)
 
-         return this.mapForecastByTime(pointWithCorrectSources)
+         return timeForecast.map( t => ({
+            time: t.time,
+            forecast: _.orderBy(t.forecast, ['rating'], ['desc'])
+         }))
       } catch(error) {
          logger.error(error)
          throw new ForecastProcessingInternalError(error.message)
       }
+   }
+
+   private async calculateRating(beaches: Beach[]): Promise<BeachForecast[]> {
+      const pointWithCorrectSources: BeachForecast[] = []
+      
+      logger.info(`Preparing the forecast for ${beaches.length} beaches`)
+
+      for (const beach of beaches) {
+         const rating = new this.RatingService(beach)
+         const points = await this.stormGlass.fetchPoints(beach.lat, beach.lng)
+         const enricheBeachData = this.enrichedBeachData(points, beach, rating)
+
+         pointWithCorrectSources.push(...enricheBeachData)
+      }
+
+      return pointWithCorrectSources
    }
 
    private enrichedBeachData(
