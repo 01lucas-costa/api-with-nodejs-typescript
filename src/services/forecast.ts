@@ -2,6 +2,7 @@ import { StormGlass, ForecastPoint } from '@src/clients/stormGlass'
 import { InternalError } from '@src/util/errors/internal-errors'
 import { Beach } from '@src/models/beach'
 import logger from '@src/logger'
+import { Rating } from './rating'
 
 export interface BeachForecast extends Omit<Beach, 'user'>, ForecastPoint {}
 
@@ -17,7 +18,10 @@ export class ForecastProcessingInternalError extends InternalError {
 }
 
 export class Forecast {
-   constructor(protected stormGlass = new StormGlass()) {}
+   constructor(
+      protected stormGlass = new StormGlass(),
+      protected RatingService: typeof Rating = Rating
+   ) {}
 
    public async processForecastForBeaches(beaches: Beach[]): Promise<TimeForecast[]> {
       const pointWithCorrectSources: BeachForecast[] = []
@@ -26,8 +30,9 @@ export class Forecast {
       
       try {
          for (const beach of beaches) {
+            const rating = new this.RatingService(beach)
             const points = await this.stormGlass.fetchPoints(beach.lat, beach.lng)
-            const enricheBeachData = this.enrichedBeachData(points, beach)
+            const enricheBeachData = this.enrichedBeachData(points, beach, rating)
 
             pointWithCorrectSources.push(...enricheBeachData)
          }
@@ -39,16 +44,20 @@ export class Forecast {
       }
    }
 
-   private enrichedBeachData(points: ForecastPoint[], beach: Beach): BeachForecast[] {
-      return points.map( e => ({
+   private enrichedBeachData(
+      points: ForecastPoint[], 
+      beach: Beach,
+      rating: Rating
+   ): BeachForecast[] {
+      return points.map( point => ({
          ... {
             lat: beach.lat,
             lng: beach.lng,
             name: beach.name,
             position: beach.position,
-            rating: 1
+            rating: rating.getRateForPoint(point)
          },
-         ...e
+         ...point
       }))
    }
 
