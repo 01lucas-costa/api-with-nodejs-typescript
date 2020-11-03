@@ -23,13 +23,16 @@ describe('AuthMiddleware', () => {
             'x-access-token': 'invalid token',
          },
       };
+
       const sendMock = jest.fn();
       const resFake = {
          status: jest.fn(() => ({
             send: sendMock,
          })),
       };
+
       const nextFake = jest.fn();
+      
       authMiddleware(reqFake, resFake as Record<string, unknown>, nextFake);
       expect(resFake.status).toHaveBeenCalledWith(401);
       expect(sendMock).toHaveBeenCalledWith({
