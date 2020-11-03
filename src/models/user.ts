@@ -1,16 +1,16 @@
-import mongoose, { Document, Model } from 'mongoose'
-import AuthService from '@src/services/auth'
+import mongoose, { Document, Model } from 'mongoose';
+import AuthService from '@src/services/auth';
 import logger from '@src/logger';
 
 export interface User {
-   _id?: string
-   name: string
-   email: string
-   password: string
+   _id?: string;
+   name: string;
+   email: string;
+   password: string;
 }
 
 export enum CUSTOM_VALIDATION {
-   DUPLICATED = 'DUPLICATED'
+   DUPLICATED = 'DUPLICATED',
 }
 
 interface UserModel extends Omit<User, '_id'>, Document {}
@@ -21,9 +21,9 @@ const schema = new mongoose.Schema(
       email: {
          type: String,
          required: true,
-         unique: [ true, 'Email must be unique' ]
+         unique: [true, 'Email must be unique'],
       },
-      password: { type: String, required: true }
+      password: { type: String, required: true },
    },
    {
       toJSON: {
@@ -34,24 +34,31 @@ const schema = new mongoose.Schema(
          },
       },
    }
-)
+);
 
-schema.path('email').validate(async (email: string) => {
-   const emailCount = await mongoose.models.User.countDocuments({ email })
-   return !emailCount
-}, 'already exists in the database.', CUSTOM_VALIDATION.DUPLICATED)
+schema.path('email').validate(
+   async (email: string) => {
+      const emailCount = await mongoose.models.User.countDocuments({ email });
+      return !emailCount;
+   },
+   'already exists in the database.',
+   CUSTOM_VALIDATION.DUPLICATED
+);
 
 schema.pre<UserModel>('save', async function (): Promise<void> {
-   if(!this.password || !this.isModified('password')) {
-      return
+   if (!this.password || !this.isModified('password')) {
+      return;
    }
 
    try {
-      const hashedPassword = await AuthService.hashPassword(this.password)
-      this.password = hashedPassword
+      const hashedPassword = await AuthService.hashPassword(this.password);
+      this.password = hashedPassword;
    } catch (error) {
-      logger.error(`Error hashing the password for the user ${this.name}`, error)
+      logger.error(
+         `Error hashing the password for the user ${this.name}`,
+         error
+      );
    }
-})
+});
 
-export const User: Model<UserModel> = mongoose.model('User', schema)
+export const User: Model<UserModel> = mongoose.model('User', schema);

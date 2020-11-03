@@ -1,20 +1,20 @@
-import _ from 'lodash'
-import { StormGlass, ForecastPoint } from '@src/clients/stormGlass'
-import { InternalError } from '@src/util/errors/internal-errors'
-import { Beach } from '@src/models/beach'
-import logger from '@src/logger'
-import { Rating } from './rating'
+import _ from 'lodash';
+import { StormGlass, ForecastPoint } from '@src/clients/stormGlass';
+import { InternalError } from '@src/util/errors/internal-errors';
+import { Beach } from '@src/models/beach';
+import logger from '@src/logger';
+import { Rating } from './rating';
 
 export interface BeachForecast extends Omit<Beach, 'user'>, ForecastPoint {}
 
 export interface TimeForecast {
-   time: string,
-   forecast: BeachForecast[]
+   time: string;
+   forecast: BeachForecast[];
 }
 
 export class ForecastProcessingInternalError extends InternalError {
    constructor(message: string) {
-      super(`Unexpected error during the forecast processing: ${message}`)
+      super(`Unexpected error during the forecast processing: ${message}`);
    }
 }
 
@@ -24,71 +24,73 @@ export class Forecast {
       protected RatingService: typeof Rating = Rating
    ) {}
 
-   public async processForecastForBeaches(beaches: Beach[]): Promise<TimeForecast[]> {      
+   public async processForecastForBeaches(
+      beaches: Beach[]
+   ): Promise<TimeForecast[]> {
       try {
-         const beachForecast = await this.calculateRating(beaches)
+         const beachForecast = await this.calculateRating(beaches);
 
-         const timeForecast = this.mapForecastByTime(beachForecast)
+         const timeForecast = this.mapForecastByTime(beachForecast);
 
-         return timeForecast.map( t => ({
+         return timeForecast.map((t) => ({
             time: t.time,
-            forecast: _.orderBy(t.forecast, ['rating'], ['desc'])
-         }))
-      } catch(error) {
-         logger.error(error)
-         throw new ForecastProcessingInternalError(error.message)
+            forecast: _.orderBy(t.forecast, ['rating'], ['desc']),
+         }));
+      } catch (error) {
+         logger.error(error);
+         throw new ForecastProcessingInternalError(error.message);
       }
    }
 
    private async calculateRating(beaches: Beach[]): Promise<BeachForecast[]> {
-      const pointWithCorrectSources: BeachForecast[] = []
-      
-      logger.info(`Preparing the forecast for ${beaches.length} beaches`)
+      const pointWithCorrectSources: BeachForecast[] = [];
+
+      logger.info(`Preparing the forecast for ${beaches.length} beaches`);
 
       for (const beach of beaches) {
-         const rating = new this.RatingService(beach)
-         const points = await this.stormGlass.fetchPoints(beach.lat, beach.lng)
-         const enricheBeachData = this.enrichedBeachData(points, beach, rating)
+         const rating = new this.RatingService(beach);
+         const points = await this.stormGlass.fetchPoints(beach.lat, beach.lng);
+         const enricheBeachData = this.enrichedBeachData(points, beach, rating);
 
-         pointWithCorrectSources.push(...enricheBeachData)
+         pointWithCorrectSources.push(...enricheBeachData);
       }
 
-      return pointWithCorrectSources
+      return pointWithCorrectSources;
    }
 
    private enrichedBeachData(
-      points: ForecastPoint[], 
+      points: ForecastPoint[],
       beach: Beach,
       rating: Rating
    ): BeachForecast[] {
-      return points.map( point => ({
-         ... {
+      return points.map((point) => ({
+         ...{
             lat: beach.lat,
             lng: beach.lng,
             name: beach.name,
             position: beach.position,
-            rating: rating.getRateForPoint(point)
+            rating: rating.getRateForPoint(point),
          },
-         ...point
-      }))
+         ...point,
+      }));
    }
 
    private mapForecastByTime(forecast: BeachForecast[]): TimeForecast[] {
-      const forecastByTime: TimeForecast[] = []
+      const forecastByTime: TimeForecast[] = [];
 
-      for(const point of forecast) {
-         const timePoint = forecastByTime.find( f => f.time === point.time )
+      for (const point of forecast) {
+         const timePoint = forecastByTime.find((f) => f.time === point.time);
 
-         if(timePoint) {
-            timePoint.forecast.push(point)
+         if (timePoint) {
+            timePoint.forecast.push(point);
          } else {
             forecastByTime.push({
                time: point.time,
-               forecast: [ point ]
-            })
+               forecast: [point],
+            });
          }
       }
 
-      return forecastByTime
+      return forecastByTime;
    }
 }
